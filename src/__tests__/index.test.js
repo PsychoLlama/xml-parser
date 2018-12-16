@@ -127,4 +127,71 @@ describe('xml-parser', () => {
       });
     });
   });
+
+  describe('Tree', () => {
+    it('returns a tag-like structure', () => {
+      const tag = xml.Tree.tryParse('<button>hey</button>');
+
+      expect(tag).toMatchObject({
+        name: 'button',
+        children: ['hey'],
+      });
+    });
+
+    it('works with nested elements', () => {
+      const tag = xml.Tree.tryParse('<p><b>bold</b></p>');
+
+      expect(tag.children).toHaveLength(1);
+      expect(tag.children[0]).toMatchObject({
+        children: ['bold'],
+        name: 'b',
+      });
+    });
+
+    it('works with multiline input', () => {
+      const input = `
+        <html>
+          <head>
+            <title>Hello parser!</title>
+          </head>
+        </html>
+      `;
+
+      const tag = xml.Tree.tryParse(input);
+
+      expect(tag.name).toBe('html');
+      expect(tag.children).toHaveLength(1);
+      expect(tag.children[0].name).toBe('head');
+      expect(tag.children[0].children).toHaveLength(1);
+      expect(tag.children[0].children[0].name).toBe('title');
+      expect(tag.children[0].children[0].children).toEqual(['Hello parser!']);
+    });
+
+    it('survives for empty tags', () => {
+      const pass = () => xml.Tree.tryParse('<script></script>');
+
+      expect(pass).not.toThrow();
+      expect(pass()).toMatchObject({
+        children: [],
+      });
+    });
+
+    it('survives with self-closing tags', () => {
+      const tag = xml.Tree.tryParse('<input />');
+
+      expect(tag).toMatchObject({
+        name: 'input',
+        children: [],
+      });
+    });
+
+    it('accepts multiple children', () => {
+      const tag = xml.Tree.tryParse('<p><span></span><br /></p>');
+
+      expect(tag.children).toEqual([
+        expect.objectContaining({ name: 'span' }),
+        expect.objectContaining({ name: 'br' }),
+      ]);
+    });
+  });
 });

@@ -119,7 +119,22 @@ export default P.createLanguage({
     });
   },
 
-  Tree({ OpeningTag, ClosingTag }) {
-    return P.seq(OpeningTag, ClosingTag);
+  Children({ Tree }) {
+    return P.alt(Tree, P.regexp(/[^<]+/))
+      .sepBy(P.optWhitespace)
+      .fallback([]);
+  },
+
+  Tree({ OpeningTag, ClosingTag, Children, SelfClosingTag }) {
+    const Tree = P.seq(OpeningTag, Children, ClosingTag)
+      .desc('XML Tree')
+      .map(result => {
+        return {
+          ...result[0],
+          children: result[1],
+        };
+      });
+
+    return P.alt(Tree, SelfClosingTag);
   },
 });
