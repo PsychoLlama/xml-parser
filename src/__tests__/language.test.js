@@ -1,4 +1,4 @@
-import xml from '../index';
+import xml from '../language';
 
 describe('xml-parser', () => {
   describe('OpeningTag', () => {
@@ -105,6 +105,20 @@ describe('xml-parser', () => {
         value: 'svg',
         ns: 'xmlns',
       });
+    });
+  });
+
+  describe('String', () => {
+    it('works with single quotes', () => {
+      const str = xml.String.tryParse("'single'");
+
+      expect(str).toEqual(["'", 'single', "'"]);
+    });
+
+    it('works with double quotes', () => {
+      const str = xml.String.tryParse('"double"');
+
+      expect(str).toEqual(['"', 'double', '"']);
     });
   });
 

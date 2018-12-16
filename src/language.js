@@ -3,6 +3,16 @@ import P from 'parsimmon';
 const idx = index => array => array[index];
 
 export default P.createLanguage({
+  String() {
+    const double = P.string('"');
+    const single = P.string("'");
+
+    const singleString = P.seq(single, P.regexp(/[^']*/), single);
+    const doubleString = P.seq(double, P.regexp(/[^"]*/), double);
+
+    return P.alt(singleString, doubleString);
+  },
+
   Identifier() {
     return P.regexp(/([a-z]|-)+/i).desc('Identifier');
   },
@@ -24,10 +34,8 @@ export default P.createLanguage({
     return NamespacedIdentifier.desc('Attribute name');
   },
 
-  AttributeWithValue({ AttributeName }) {
-    const value = P.seq(P.string('"'), P.regexp(/[^"]+/), P.string('"'))
-      .desc('Attribute value')
-      .map(idx(1));
+  AttributeWithValue({ AttributeName, String }) {
+    const value = String.desc('Attribute value').map(idx(1));
 
     return P.seq(AttributeName, P.string('='), value).map(result => {
       const [[ns, property]] = result;
