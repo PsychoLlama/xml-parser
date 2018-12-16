@@ -112,13 +112,13 @@ describe('xml-parser', () => {
     it('works with single quotes', () => {
       const str = xml.String.tryParse("'single'");
 
-      expect(str).toEqual(["'", 'single', "'"]);
+      expect(str).toBe('single');
     });
 
     it('works with double quotes', () => {
       const str = xml.String.tryParse('"double"');
 
-      expect(str).toEqual(['"', 'double', '"']);
+      expect(str).toBe('double');
     });
   });
 

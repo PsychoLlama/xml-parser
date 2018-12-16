@@ -10,7 +10,7 @@ export default P.createLanguage({
     const singleString = P.seq(single, P.regexp(/[^']*/), single);
     const doubleString = P.seq(double, P.regexp(/[^"]*/), double);
 
-    return P.alt(singleString, doubleString);
+    return P.alt(singleString, doubleString).map(idx(1));
   },
 
   Identifier() {
@@ -35,7 +35,7 @@ export default P.createLanguage({
   },
 
   AttributeWithValue({ AttributeName, String }) {
-    const value = String.desc('Attribute value').map(idx(1));
+    const value = String.desc('Attribute value');
 
     return P.seq(AttributeName, P.string('='), value).map(result => {
       const [[ns, property]] = result;
