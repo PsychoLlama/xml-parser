@@ -7,6 +7,9 @@
   "author": "Jesse Gibson <JesseTheGibson@gmail.com>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "lint": "eslint src"
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.2",
