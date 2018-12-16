@@ -193,5 +193,11 @@ describe('xml-parser', () => {
         expect.objectContaining({ name: 'br' }),
       ]);
     });
+
+    it('works with mixed children', () => {
+      const tag = xml.Tree.tryParse('<p>text <hr /> more text</p>');
+
+      expect(tag.children).toHaveLength(3);
+    });
   });
 });

@@ -63,10 +63,10 @@ export default P.createLanguage({
     }));
 
     return P.seq(
-      P.string('<').trim(P.optWhitespace),
+      P.string('<'),
       tagSpecifier.trim(P.optWhitespace),
       Attributes,
-      P.string('>').trim(P.optWhitespace)
+      P.string('>')
     ).map(result => {
       return {
         attributes: result[2],
@@ -75,13 +75,11 @@ export default P.createLanguage({
     });
   },
 
-  SelfClosingTag({ NamespacedIdentifier, Attribute }) {
-    const attributes = Attribute.sepBy(P.optWhitespace).trim(P.optWhitespace);
-
+  SelfClosingTag({ NamespacedIdentifier, Attributes }) {
     return P.seq(
       P.string('<'),
       NamespacedIdentifier,
-      attributes,
+      Attributes,
       P.string('/>')
     ).map(result => {
       const [ns, name] = result[1];
@@ -135,6 +133,6 @@ export default P.createLanguage({
         };
       });
 
-    return P.alt(Tree, SelfClosingTag);
+    return P.alt(Tree, SelfClosingTag).trim(P.optWhitespace);
   },
 });
