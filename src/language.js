@@ -36,8 +36,9 @@ export default P.createLanguage({
 
   AttributeWithValue({ AttributeName, String }) {
     const value = String.desc('Attribute value');
+    const delimiter = P.string('=').trim(P.optWhitespace);
 
-    return P.seq(AttributeName, P.string('='), value).map(result => {
+    return P.seq(AttributeName, delimiter, value).map(result => {
       const [[ns, property]] = result;
 
       return {

@@ -110,6 +110,15 @@ describe('xml-parser', () => {
         ns: 'xmlns',
       });
     });
+
+    it('allows objectively bad whitespace choices', () => {
+      const attr = xml.Attribute.tryParse('type = "date"');
+
+      expect(attr).toMatchObject({
+        property: 'type',
+        value: 'date',
+      });
+    });
   });
 
   describe('Attributes', () => {
