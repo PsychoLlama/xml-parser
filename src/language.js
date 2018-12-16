@@ -2,6 +2,11 @@ import P from 'parsimmon';
 
 const idx = index => array => array[index];
 
+const toNsName = (ns, name) => {
+  const nsPrefix = ns ? ns + ':' : '';
+  return nsPrefix + name;
+};
+
 export default P.createLanguage({
   String() {
     const double = P.string('"');
@@ -66,8 +71,7 @@ export default P.createLanguage({
       .trim(P.optWhitespace)
       .map(attrs =>
         attrs.reduce((attrs, attr) => {
-          const nsPrefix = attr.ns ? `${attr.ns}:` : '';
-          attrs[nsPrefix + attr.property] = attr;
+          attrs[toNsName(attr.ns, attr.property)] = attr;
 
           return attrs;
         }, {})
@@ -174,12 +178,12 @@ export default P.createLanguage({
       .desc('tag')
       .chain(result => {
         const [openingTag, children, closingTag] = result;
+        const openingTagName = toNsName(openingTag.ns, openingTag.name);
+        const closingTagName = toNsName(closingTag.ns, closingTag.name);
 
-        if (openingTag.name !== closingTag.name) {
+        if (openingTagName !== closingTagName) {
           return P.fail(
-            `mismatching tag name "${closingTag.name}" (expected "${
-              openingTag.name
-            }")`
+            `</${openingTagName}> closing tag (got </${closingTagName}> instead)`
           );
         }
 

@@ -251,6 +251,12 @@ describe('xml-parser', () => {
 
       expect(fail).toThrow(/bacon/);
     });
+
+    it('throws on mismatching namespaces', () => {
+      const fail = () => xml.Tree.tryParse('<html:button></mathml:button>');
+
+      expect(fail).toThrow(/mathml:button/);
+    });
   });
 
   describe('Declaration', () => {
