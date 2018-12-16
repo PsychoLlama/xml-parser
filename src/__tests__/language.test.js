@@ -238,6 +238,16 @@ describe('xml-parser', () => {
 
       expect(fail).toThrow(/version/i);
     });
+
+    it('works with single quote', () => {
+      const dec = xml.Declaration.tryParse(
+        "<?xml version='1.0' encoding='UTF-8'?>"
+      );
+
+      expect(dec).toMatchObject({
+        encoding: 'UTF-8',
+      });
+    });
   });
 
   describe('Document', () => {
