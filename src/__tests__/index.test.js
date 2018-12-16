@@ -199,5 +199,67 @@ describe('xml-parser', () => {
 
       expect(tag.children).toHaveLength(3);
     });
+
+    it('dies if the closing tag mismatches', () => {
+      const fail = () => xml.Tree.tryParse('<p></bacon>');
+
+      expect(fail).toThrow(/bacon/);
+    });
+  });
+
+  describe('Declaration', () => {
+    it('returns metadata', () => {
+      const dec = xml.Declaration.tryParse(
+        '<?xml version="1.1" encoding="UTF-8" ?>'
+      );
+
+      expect(dec).toMatchObject({
+        encoding: 'UTF-8',
+        version: '1.1',
+      });
+    });
+
+    it('dies if version is omitted', () => {
+      const fail = () => xml.Declaration.tryParse('<?xml encoding="UTF-8" ?>');
+
+      expect(fail).toThrow(/version/i);
+    });
+  });
+
+  describe('Document', () => {
+    it('parses the given XML document', () => {
+      const document = `
+        <?xml version="1.1"?>
+        <metadata>
+          <title>Content</title>
+        </metadata>
+      `;
+
+      const doc = xml.Document.tryParse(document);
+
+      expect(doc).toMatchObject({
+        declaration: { version: '1.1' },
+        root: {
+          name: 'metadata',
+          children: [
+            expect.objectContaining({
+              name: 'title',
+              children: ['Content'],
+            }),
+          ],
+        },
+      });
+    });
+
+    // I think this is valid. Not sure. I don't really care enough to find
+    // out.
+    it('survives without a declaration', () => {
+      const doc = xml.Document.tryParse('<no-decl />');
+
+      expect(doc).toMatchObject({
+        root: { name: 'no-decl' },
+        declaration: null,
+      });
+    });
   });
 });

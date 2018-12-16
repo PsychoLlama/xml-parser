@@ -80,7 +80,8 @@ export default P.createLanguage({
       P.string('<'),
       NamespacedIdentifier,
       Attributes,
-      P.string('/>')
+      P.string('/').trim(P.optWhitespace),
+      P.string('>')
     ).map(result => {
       const [ns, name] = result[1];
 
@@ -123,16 +124,70 @@ export default P.createLanguage({
       .fallback([]);
   },
 
+  Declaration({ Attributes }) {
+    const string = value => P.string(value).trim(P.optWhitespace);
+    const marker = P.seq(string('<'), string('?'), string('xml')).desc(
+      'XML declaration'
+    );
+
+    const terminator = P.seq(string('?'), string('>'));
+    const attributes = Attributes.desc('Declaration attributes').chain(
+      attrs => {
+        const version = attrs.find(attr => attr.property === 'version');
+
+        if (!version) {
+          return P.fail('required attribute "version" was omitted.');
+        }
+
+        return P.of(attrs);
+      }
+    );
+
+    return P.seq(marker, attributes, terminator).map(result => {
+      return result[1].reduce((decl, attr) => {
+        decl[attr.property] = attr.value;
+
+        return decl;
+      }, {});
+    });
+  },
+
   Tree({ OpeningTag, ClosingTag, Children, SelfClosingTag }) {
     const Tree = P.seq(OpeningTag, Children, ClosingTag)
-      .desc('XML Tree')
-      .map(result => {
-        return {
-          ...result[0],
-          children: result[1],
-        };
+      .desc('tag')
+      .chain(result => {
+        const [openingTag, children, closingTag] = result;
+
+        if (openingTag.name !== closingTag.name) {
+          return P.fail(
+            `mismatching tag name "${closingTag.name}" (expected "${
+              openingTag.name
+            }")`
+          );
+        }
+
+        return P.of({
+          ...openingTag,
+          children,
+        });
       });
 
     return P.alt(Tree, SelfClosingTag).trim(P.optWhitespace);
+  },
+
+  Document({ Declaration, Tree }) {
+    const withDeclaration = P.seq(Declaration, Tree).map(
+      ([declaration, root]) => ({
+        declaration,
+        root,
+      })
+    );
+
+    const withoutDeclaration = Tree.map(root => ({
+      declaration: null,
+      root,
+    }));
+
+    return P.alt(withDeclaration, withoutDeclaration);
   },
 });
