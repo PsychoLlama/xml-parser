@@ -30,7 +30,9 @@ describe('xml-parser', () => {
       const tag = xml.OpeningTag.tryParse('<input type="text">');
 
       expect(tag).toMatchObject({
-        attributes: [{ property: 'type', value: 'text' }],
+        attributes: {
+          type: { ns: null, property: 'type', value: 'text' },
+        },
       });
     });
 
@@ -48,7 +50,9 @@ describe('xml-parser', () => {
       const tag = xml.SelfClosingTag.tryParse('<html:input type="text" />');
 
       expect(tag).toMatchObject({
-        attributes: [{ ns: null, property: 'type', value: 'text' }],
+        attributes: {
+          type: { ns: null, property: 'type', value: 'text' },
+        },
         name: 'input',
         children: [],
         ns: 'html',
@@ -104,6 +108,25 @@ describe('xml-parser', () => {
         property: 'xlink',
         value: 'svg',
         ns: 'xmlns',
+      });
+    });
+  });
+
+  describe('Attributes', () => {
+    it('returns an object', () => {
+      const attrs = xml.Attributes.tryParse('type="text" disabled=""');
+
+      expect(attrs).toMatchObject({
+        disabled: { property: 'disabled', ns: null, value: '' },
+        type: { property: 'type', ns: null, value: 'text' },
+      });
+    });
+
+    it('includes the namespace in the attribute identifier', () => {
+      const attrs = xml.Attributes.tryParse('xmlns:xlink="value"');
+
+      expect(attrs).toMatchObject({
+        'xmlns:xlink': { property: 'xlink', ns: 'xmlns', value: 'value' },
       });
     });
   });

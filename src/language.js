@@ -61,7 +61,16 @@ export default P.createLanguage({
   },
 
   Attributes({ Attribute }) {
-    return Attribute.sepBy(P.optWhitespace).trim(P.optWhitespace);
+    return Attribute.sepBy(P.optWhitespace)
+      .trim(P.optWhitespace)
+      .map(attrs =>
+        attrs.reduce((attrs, attr) => {
+          const nsPrefix = attr.ns ? `${attr.ns}:` : '';
+          attrs[nsPrefix + attr.property] = attr;
+
+          return attrs;
+        }, {})
+      );
   },
 
   OpeningTag({ Attributes, NamespacedIdentifier }) {
@@ -141,9 +150,7 @@ export default P.createLanguage({
     const terminator = P.seq(string('?'), string('>'));
     const attributes = Attributes.desc('Declaration attributes').chain(
       attrs => {
-        const version = attrs.find(attr => attr.property === 'version');
-
-        if (!version) {
+        if (!attrs.version) {
           return P.fail('required attribute "version" was omitted.');
         }
 
@@ -152,10 +159,11 @@ export default P.createLanguage({
     );
 
     return P.seq(marker, attributes, terminator).map(result => {
-      return result[1].reduce((decl, attr) => {
-        decl[attr.property] = attr.value;
+      return Object.keys(result[1]).reduce((attrs, attrName) => {
+        const attr = result[1][attrName];
+        attrs[attrName] = attr.value;
 
-        return decl;
+        return attrs;
       }, {});
     });
   },
